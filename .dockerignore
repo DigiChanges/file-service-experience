@@ -1,0 +1,5 @@
+node_modules/
+infrastructure
+.circleci
+.github
+docs

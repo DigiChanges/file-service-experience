@@ -1,0 +1,9 @@
+{
+  "http": [
+    "Koa"
+  ],
+  "orm": [
+    "Mongoose",
+    "MikroORM"
+  ]
+}
