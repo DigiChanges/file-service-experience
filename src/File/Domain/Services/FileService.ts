@@ -2,11 +2,11 @@
 import { CWebp } from 'cwebp';
 import { readFile, stat } from 'fs/promises';
 import IFileVersionDomain from '../Entities/IFileVersionDomain';
-import FilesystemFactory from '../../../Shared/Factories/FilesystemFactory';
+import FileSystemFactory from '../../../Shared/Factories/FileSystemFactory';
 import { REPOSITORIES } from '../../../Config/Injects';
 import IFileVersionRepository from '../../Infrastructure/Repositories/IFileVersionRepository';
 import PresignedFileRepPayload from '../../Domain/Payloads/PresignedFileRepPayload';
-import { ICriteria } from '@digichanges/shared-experience';
+import { ICriteria, NotFoundException } from '@digichanges/shared-experience';
 import { IFilesystem, IPaginator } from '@digichanges/shared-experience';
 import ListObjectsPayload from '../../Domain/Payloads/ListObjectsPayload';
 import FileBase64RepPayload from '../Payloads/FileBase64RepPayload';
@@ -43,7 +43,7 @@ class FileService
         const { container } = getRequestContext();
         this.versionRepository = container.resolve<IFileVersionRepository>(REPOSITORIES.IFileVersionRepository);
         this.fileRepository = container.resolve<IFileRepository>(REPOSITORIES.IFileRepository);
-        this.fileSystem = FilesystemFactory.create();
+        this.fileSystem = FileSystemFactory.create();
     }
 
     async getOne(id: string): Promise<IFileDomain>
@@ -87,7 +87,7 @@ class FileService
 
     async uploadFileMultipart(fileVersion: IFileVersionDomain, payload: FileMultipartRepPayload): Promise<any>
     {
-        await this.fileSystem.uploadFile(fileVersion, payload.file.path);
+        await this.fileSystem.uploadFile(fileVersion, `${payload.file.destination}/${payload.file.filename}`);
 
         return fileVersion;
     }
@@ -147,6 +147,10 @@ class FileService
 
         const fileVersion = !version ? await this.getLastVersions(id) : await this.getOneVersion(id, version);
 
+        if (!fileVersion)
+        {
+            throw new NotFoundException('File version');
+        }
         const stream = await this.fileSystem.downloadStreamFile(fileVersion);
 
         return new FileVersionDTO(fileVersion, stream);
@@ -181,8 +185,11 @@ class FileService
     {
         const path = await this.fileSystem.downloadFile(fileVersion);
         const encoder = CWebp(path);
-        const newPath = path.replace(fileVersion.extension, 'webp');
-        await encoder.write(newPath);
+        const newPath = path?.replace(fileVersion.extension, 'webp');
+        if (newPath)
+        {
+            await encoder.write(newPath);
+        }
 
         return {
             originalName: fileVersion.originalName.replace(fileVersion.extension, 'webp'),

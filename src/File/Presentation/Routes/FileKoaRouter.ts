@@ -17,7 +17,7 @@ FileKoaRouter.post('/presigned-get-object', FileController.getPresignedGetObject
 FileKoaRouter.get('/:id', FileController.download);
 FileKoaRouter.put('/optimize/:id', FileController.optimize);
 FileKoaRouter.put('/base64/:id', FileController.updateBase64);
-FileKoaRouter.put('/:id', FileController.updateMultipart);
+FileKoaRouter.put('/:id', <any>FileKoaReqMulterMiddleware.single('file'), FileController.updateMultipart);
 FileKoaRouter.delete('/:id', FileController.remove);
 
 export default FileKoaRouter;
