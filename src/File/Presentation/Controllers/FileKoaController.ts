@@ -220,7 +220,7 @@ class FileController
                 isImage: mimetype.includes('image')
             },
             query: {
-                isOriginalName: isOriginalName === 'true',
+                isOriginalName: isOriginalName === 'true' ?? undefined,
                 isPublic: isPublic === 'true',
                 isOverwrite: isOverwrite === 'true',
                 isOptimize: isOptimize === 'true'

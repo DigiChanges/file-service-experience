@@ -1,9 +1,9 @@
 import MainConfig from '../../Config/MainConfig';
 import { IFilesystem, MinioStrategy } from '@digichanges/shared-experience';
 
-type FilesystemValueProp = typeof MinioStrategy;
+type FileSystemValueProp = typeof MinioStrategy;
 
-class FilesystemFactory
+class FileSystemFactory
 {
     static create(_default?: 'minio'): IFilesystem
     {
@@ -11,11 +11,11 @@ class FilesystemFactory
         const filesystemKey = _default ?? config.default;
         const filesystemConfig =  config[filesystemKey];
 
-        const strategy = new Map<string, FilesystemValueProp>();
+        const strategy = new Map<string, FileSystemValueProp>();
         strategy.set('minio', MinioStrategy);
 
         return new (strategy.get(filesystemKey))(filesystemConfig);
     }
 }
 
-export default FilesystemFactory;
+export default FileSystemFactory;

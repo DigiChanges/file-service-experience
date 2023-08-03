@@ -31,7 +31,7 @@
   "author": "Nathan M. Russo",
   "license": "MIT",
   "dependencies": {
-    "@digichanges/shared-experience": "file:.yalc/@digichanges/shared-experience",
+    "@digichanges/shared-experience": "^1.2.0",
     "@faker-js/faker": "^8.0.2",
     "@godaddy/terminus": "^4.12.1",
     "@koa/cors": "^4.0.0",
@@ -126,6 +126,7 @@
     "eslint": "^8.42.0",
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-prefer-arrow": "^1.2.3",
+    "form-data": "4.0.0",
     "husky": "^8.0.3",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
