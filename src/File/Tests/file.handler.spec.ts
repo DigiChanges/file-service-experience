@@ -1,7 +1,7 @@
 import { SuperAgentTest } from 'supertest';
 import initTestServer from '../../initTestServer';
 import FileSystemFactory from '../../Shared/Factories/FileSystemFactory';
-import { middlewareMulterMock, UploadFileBase64, UploadFileMultipart } from './fixture';
+import { UploadFileBase64, UploadFileMultipart, mockUploadMultipart } from './fixture';
 import { IFileResponse } from './types';
 import ICreateConnection from '../../Shared/Infrastructure/Database/ICreateConnection';
 import FileKoaReqMulterMiddleware from '../Presentation/Middlewares/FileKoaReqMulterMiddleware';
@@ -20,6 +20,11 @@ const FileSystemMocked =
         setBucketPolicy: jest.fn()
     };
 
+const mockMulter = {
+    multer: {
+        storage: jest.fn()
+    }
+};
 
 describe('Start File Test', () =>
 {
@@ -35,8 +40,9 @@ describe('Start File Test', () =>
         dbConnection = configServer.dbConnection;
 
         jest.spyOn(FileSystemFactory, 'create').mockImplementation(() => FileSystemMocked);
-        jest.spyOn(FileKoaReqMulterMiddleware, 'single').mockReturnValue(() => middlewareMulterMock as unknown as any);
+        jest.spyOn(FileKoaReqMulterMiddleware, 'single').mockImplementation(() => mockMulter as any);
         jest.mock('../Domain/Services/FileService');
+        // jest.mock('../Presentation/Middlewares/FileKoaReqMulterMiddleware');
     });
 
     afterAll((async() =>
@@ -50,10 +56,11 @@ describe('Start File Test', () =>
         // FIXME: can't make it pass from the middleware
         test.skip('Upload File /files', async() =>
         {
+            mockMulter.multer.storage.mockReturnValueOnce(UploadFileMultipart);
             const response: IFileResponse = await request
-                .post('/api/files/')
+                .post('/api/files')
                 .set('Accept', 'application/json')
-                .send(UploadFileMultipart);
+                .send(mockUploadMultipart);
 
             const { body: { data } } = response;
 
