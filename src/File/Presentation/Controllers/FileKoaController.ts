@@ -108,7 +108,10 @@ class FileController
     {
         const { originalname, encoding, mimetype, destination, filename, size } = ctx.request.file;
         const { isOriginalName, isPublic, isOverwrite, isOptimize } = ctx.request.query;
-
+        if (!ctx.request.file)
+        {
+            return void await responder.send('No file received', ctx, StatusCode.HTTP_BAD_REQUEST);
+        }
         const payload = {
             file: {
                 originalName: originalname,
@@ -133,6 +136,43 @@ class FileController
         const file = await useCase.handle(payload);
 
         void await responder.send(file, ctx, StatusCode.HTTP_CREATED, new FileTransformer());
+    }
+    static async uploadMultipleImages(ctx: any): Promise<void>
+    {
+        const files = ctx.request.files;
+        if (!files)
+        {
+            return void await responder.send('No files received', ctx, StatusCode.HTTP_BAD_REQUEST);
+        }
+        const responseFiles = [];
+        for (const file of files)
+        {
+            const { originalname, encoding, mimetype, destination, filename, size } = file;
+            const { isOriginalName, isPublic, isOverwrite, isOptimize } = ctx.request.query;
+
+            const payload = {
+                file: {
+                    originalName: originalname,
+                    mimeType: mimetype,
+                    destination,
+                    extension: originalname.includes('.') ? originalname.split('.').pop() : '',
+                    filename,
+                    path: '/',
+                    size,
+                    encoding,
+                    isImage: mimetype.includes('image')
+                },
+                query: {
+                    isOriginalName: isOriginalName === 'true',
+                    isPublic: isPublic === 'true',
+                    isOverwrite: isOverwrite === 'true',
+                    isOptimize: isOptimize === 'true'
+                }
+            };
+            const useCase = new UploadMultipartUseCase();
+            responseFiles.push((await useCase.handle(payload)));
+        }
+        void await responder.send(responseFiles, ctx, StatusCode.HTTP_CREATED, new FileTransformer());
     }
 
     static async getPresignedGetObject(ctx: any): Promise<void>
